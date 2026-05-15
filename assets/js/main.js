@@ -3,10 +3,8 @@
 // Mobile Menu Toggle
 function toggleMobileMenu() {
     const navMenu = document.getElementById('navMenu');
-    if (navMenu.style.display === 'block') {
-        navMenu.style.display = 'none';
-    } else {
-        navMenu.style.display = 'block';
+    if (navMenu) {
+        navMenu.classList.toggle('active');
     }
 }
 
@@ -16,7 +14,7 @@ document.addEventListener('click', function(event) {
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
     
     if (navMenu && !navMenu.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
-        navMenu.style.display = '';
+        navMenu.classList.remove('active');
     }
 });
 
