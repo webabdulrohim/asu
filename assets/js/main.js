@@ -22,7 +22,7 @@ document.addEventListener('click', function(event) {
 
 // Add to Cart Function
 function addToCart(productId, quantity = 1) {
-    fetch('/corestone/api/cart-add.php', {
+    fetch('api/cart-add.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ function addToCart(productId, quantity = 1) {
 
 // Update Cart Count
 function updateCartCount() {
-    fetch('/corestone/api/cart-count.php')
+    fetch('api/cart-count.php')
         .then(response => response.json())
         .then(data => {
             const cartCountElements = document.querySelectorAll('.cart-count');
@@ -218,7 +218,7 @@ function updateQuantity(action) {
 
 // Wishlist functionality
 function toggleWishlist(productId) {
-    fetch('/corestone/api/wishlist-toggle.php', {
+    fetch('api/wishlist-toggle.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
