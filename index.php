@@ -53,7 +53,7 @@ try {
             </div>
         </div>
         <div class="hero-image">
-            <img src="<?php echo SITE_URL; ?>/assets/images/hero-batu-akik.png" alt="Batu Akik Indonesia" style="max-width: 100%; height: auto;">
+            <img src="<?php echo SITE_URL; ?>/assets/images/placeholder.svg" alt="Batu Akik Indonesia" style="max-width: 100%; height: auto; border-radius: 12px;">
         </div>
     </div>
 </section>
@@ -93,21 +93,21 @@ try {
                 <div class="product-image">
                     <?php 
                     $images = json_decode($product['images'], true);
-                    $main_image = !empty($images[0]) ? $images[0] : 'default-product.jpg';
+                    $main_image = !empty($images[0]) ? $images[0] : 'placeholder.svg';
                     ?>
-                    <img src="<?php echo SITE_URL; ?>/uploads/products/<?php echo $main_image; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                    <img src="<?php echo SITE_URL; ?>/uploads/products/<?php echo $main_image; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" onerror="this.src='<?php echo SITE_URL; ?>/assets/images/placeholder.svg'; this.onerror=null;">
                     
                     <?php if ($product['discount_price']): ?>
                         <span class="product-badge">Diskon</span>
                     <?php endif; ?>
                     
                     <div class="product-actions">
-                        <button class="product-action-btn" title="Wishlist">
+                        <button class="product-action-btn" title="Wishlist" onclick="toggleWishlist(<?php echo $product['id']; ?>)">
                             <i class="far fa-heart"></i>
                         </button>
-                        <button class="product-action-btn" title="Quick View">
+                        <a href="<?php echo SITE_URL; ?>/product.php?slug=<?php echo $product['slug']; ?>" class="product-action-btn" title="Quick View">
                             <i class="far fa-eye"></i>
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="product-info">
@@ -160,21 +160,21 @@ try {
                 <div class="product-image">
                     <?php 
                     $images = json_decode($product['images'], true);
-                    $main_image = !empty($images[0]) ? $images[0] : 'default-product.jpg';
+                    $main_image = !empty($images[0]) ? $images[0] : 'placeholder.svg';
                     ?>
-                    <img src="<?php echo SITE_URL; ?>/uploads/products/<?php echo $main_image; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                    <img src="<?php echo SITE_URL; ?>/uploads/products/<?php echo $main_image; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" onerror="this.src='<?php echo SITE_URL; ?>/assets/images/placeholder.svg'; this.onerror=null;">
                     
                     <?php if ($product['discount_price']): ?>
                         <span class="product-badge">Diskon</span>
                     <?php endif; ?>
                     
                     <div class="product-actions">
-                        <button class="product-action-btn" title="Wishlist">
+                        <button class="product-action-btn" title="Wishlist" onclick="toggleWishlist(<?php echo $product['id']; ?>)">
                             <i class="far fa-heart"></i>
                         </button>
-                        <button class="product-action-btn" title="Quick View">
+                        <a href="<?php echo SITE_URL; ?>/product.php?slug=<?php echo $product['slug']; ?>" class="product-action-btn" title="Quick View">
                             <i class="far fa-eye"></i>
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="product-info">
