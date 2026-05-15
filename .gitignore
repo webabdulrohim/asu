@@ -1,19 +1,13 @@
+```gitignore
 # Compiled and build artifacts
 *.pyc
 __pycache__/
-*.o
-*.obj
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
 
 # Dependencies
-node_modules/
-venv/
-.venv/
+vendor/
+composer.lock
+
+# Environment
 .env
 .env.local
 *.env.*
@@ -21,23 +15,17 @@ venv/
 # Logs and temp files
 *.log
 *.tmp
-*.swp
 
 # Editors
 .vscode/
 .idea/
+*.swp
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Database
+*.sql.bak
+*.db.bak
 
-# Distribution / packaging
-dist/
-build/
-*.tar.gz
-*.zip
-
-# Python specific
-.pytest_cache/
-.mypy_cache/
+# Web specific
+*.php~
+*.php.bak
+```

@@ -6,79 +6,59 @@ if (isLoggedIn()) {
     redirect(SITE_URL . '/index.php');
 }
 
-$pageTitle = 'Login';
+$pageTitle = 'Daftar Akun';
 $error_message = '';
 $success_message = '';
 
 // Generate CSRF token
 $csrf_token = generateCSRFToken();
 
-// Handle login form submission
+// Handle registration form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verify CSRF token
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $error_message = 'Token keamanan tidak valid. Silakan refresh halaman.';
     } else {
+        $name = sanitize($_POST['name'] ?? '');
         $email = sanitize($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        $phone = sanitize($_POST['phone'] ?? '');
         
-        if (empty($email) || empty($password)) {
-            $error_message = 'Email dan password harus diisi';
+        // Validation
+        if (empty($name) || empty($email) || empty($password)) {
+            $error_message = 'Semua field wajib diisi';
         } elseif (!validateEmail($email)) {
             $error_message = 'Format email tidak valid';
+        } elseif (!validatePassword($password)) {
+            $error_message = 'Password minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka';
+        } elseif ($password !== $confirm_password) {
+            $error_message = 'Password dan konfirmasi password tidak sama';
+        } elseif (strlen($name) < 3) {
+            $error_message = 'Nama minimal 3 karakter';
         } else {
-            // Check rate limiting
-            $ip_address = $_SERVER['REMOTE_ADDR'];
-            
-            if (!checkLoginAttempts($ip_address)) {
-                $error_message = 'Terlalu banyak percobaan login gagal. Silakan coba lagi dalam 15 menit.';
-            } else {
-                try {
-                    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND status = 'active'");
-                    $stmt->execute([$email]);
-                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            try {
+                // Check if email already exists
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                
+                if ($stmt->fetch()) {
+                    $error_message = 'Email sudah terdaftar. Silakan login atau gunakan email lain.';
+                } else {
+                    // Hash password and insert user
+                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                     
-                    if ($user && password_verify($password, $user['password'])) {
-                        // Successful login - clear any failed attempts
-                        recordLoginAttempt($ip_address, true);
-                        
-                        // Regenerate session ID to prevent session fixation
-                        session_regenerate_id(true);
-                        
-                        // Set session
-                        $_SESSION['user_id'] = $user['id'];
-                        $_SESSION['user_name'] = $user['name'];
-                        $_SESSION['user_email'] = $user['email'];
-                        $_SESSION['user_role'] = $user['role'];
-                        
-                        // Transfer guest cart to user cart if exists
-                        if (isset($_SESSION['guest_cart']) && !empty($_SESSION['guest_cart'])) {
-                            foreach ($_SESSION['guest_cart'] as $product_id => $quantity) {
-                                try {
-                                    $stmt = $pdo->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE quantity = quantity + ?");
-                                    $stmt->execute([$_SESSION['user_id'], $product_id, $quantity, $quantity]);
-                                } catch (PDOException $e) {
-                                    error_log("Error transferring guest cart: " . $e->getMessage());
-                                }
-                            }
-                            unset($_SESSION['guest_cart']);
-                        }
-                        
-                        // Redirect based on role
-                        if ($user['role'] === 'admin') {
-                            redirect(SITE_URL . '/admin/index.php');
-                        } else {
-                            redirect(SITE_URL . '/index.php');
-                        }
-                    } else {
-                        // Failed login attempt
-                        recordLoginAttempt($ip_address, false);
-                        $error_message = 'Email atau password salah';
-                    }
-                } catch (PDOException $e) {
-                    error_log("Login error: " . $e->getMessage());
-                    $error_message = 'Terjadi kesalahan sistem. Silakan coba lagi nanti.';
+                    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, phone, role, status, created_at) VALUES (?, ?, ?, ?, 'user', 'active', NOW())");
+                    $stmt->execute([$name, $email, $hashed_password, $phone]);
+                    
+                    $success_message = 'Pendaftaran berhasil! Silakan login dengan akun Anda.';
+                    
+                    // Clear form
+                    $_POST = [];
                 }
+            } catch (PDOException $e) {
+                error_log("Registration error: " . $e->getMessage());
+                $error_message = 'Terjadi kesalahan sistem. Silakan coba lagi nanti.';
             }
         }
     }
@@ -89,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Core Stone Indonesia</title>
+    <title>Daftar Akun - Core Stone Indonesia</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -115,45 +95,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 20px;
         }
         
-        .login-container {
+        .register-container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
         }
         
-        .login-header {
+        .register-header {
             background: var(--gradient-primary);
             padding: 40px 30px;
             text-align: center;
             color: white;
         }
         
-        .login-header i {
+        .register-header i {
             font-size: 50px;
             margin-bottom: 15px;
             color: #ffd700;
         }
         
-        .login-header h1 {
+        .register-header h1 {
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 5px;
         }
         
-        .login-header p {
+        .register-header p {
             opacity: 0.9;
             font-size: 14px;
         }
         
-        .login-body {
+        .register-body {
             padding: 40px 30px;
         }
         
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         .form-group label {
@@ -179,7 +159,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: var(--primary-color);
         }
         
-        .btn-login {
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .btn-register {
             width: 100%;
             padding: 14px;
             background: var(--gradient-primary);
@@ -193,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-family: inherit;
         }
         
-        .btn-login:hover {
+        .btn-register:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(128, 0, 32, 0.3);
         }
@@ -217,20 +204,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #c3e6cb;
         }
         
-        .login-footer {
+        .register-footer {
             text-align: center;
             margin-top: 25px;
             padding-top: 25px;
             border-top: 1px solid #e0e0e0;
         }
         
-        .login-footer a {
+        .register-footer a {
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 600;
         }
         
-        .login-footer a:hover {
+        .register-footer a:hover {
             text-decoration: underline;
         }
         
@@ -247,11 +234,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         @media (max-width: 480px) {
-            .login-header {
+            .register-header {
                 padding: 30px 20px;
             }
             
-            .login-body {
+            .register-body {
                 padding: 30px 20px;
             }
         }
@@ -262,14 +249,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <i class="fas fa-arrow-left"></i> Kembali ke Beranda
     </a>
     
-    <div class="login-container">
-        <div class="login-header">
-            <i class="fas fa-gem"></i>
+    <div class="register-container">
+        <div class="register-header">
+            <i class="fas fa-user-plus"></i>
             <h1>Core Stone</h1>
-            <p>Masuk ke akun Anda</p>
+            <p>Buat akun baru</p>
         </div>
         
-        <div class="login-body">
+        <div class="register-body">
             <?php if ($error_message): ?>
                 <div class="alert alert-error"><?php echo $error_message; ?></div>
             <?php endif; ?>
@@ -282,6 +269,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 
                 <div class="form-group">
+                    <label for="name"><i class="fas fa-user"></i> Nama Lengkap</label>
+                    <input type="text" id="name" name="name" required 
+                           value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>"
+                           placeholder="Masukkan nama lengkap Anda">
+                </div>
+                
+                <div class="form-group">
                     <label for="email"><i class="fas fa-envelope"></i> Email</label>
                     <input type="email" id="email" name="email" required 
                            value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
@@ -289,18 +283,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="password" name="password" required 
-                           placeholder="Masukkan password Anda">
+                    <label for="phone"><i class="fas fa-phone"></i> Nomor WhatsApp (Opsional)</label>
+                    <input type="tel" id="phone" name="phone" 
+                           value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>"
+                           placeholder="Contoh: 081234567890">
                 </div>
                 
-                <button type="submit" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i> Masuk
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Minimal 8 karakter">
+                    <small>Minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password"><i class="fas fa-lock"></i> Konfirmasi Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required 
+                           placeholder="Ulangi password Anda">
+                </div>
+                
+                <button type="submit" class="btn-register">
+                    <i class="fas fa-user-plus"></i> Daftar Sekarang
                 </button>
             </form>
             
-            <div class="login-footer">
-                <p>Belum punya akun? <a href="register.php">Daftar sekarang</a></p>
+            <div class="register-footer">
+                <p>Sudah punya akun? <a href="login.php">Login sekarang</a></p>
             </div>
         </div>
     </div>
