@@ -1,8 +1,10 @@
 -- Core Stone Indonesia Database Schema
 -- Created for Batu Akik E-commerce Platform
+-- IMPORTANT: Buat database manual di cPanel terlebih dahulu, lalu import file ini
+-- Jangan gunakan perintah CREATE DATABASE di hosting shared
 
-CREATE DATABASE IF NOT EXISTS corestone_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE corestone_db;
+-- Gunakan database yang sudah dibuat (sesuaikan nama database jika perlu)
+-- USE nama_database_anda;
 
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (

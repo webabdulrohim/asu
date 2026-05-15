@@ -1,13 +1,13 @@
 <?php
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'corestone_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_NAME', 'cpses_ulosrqmp5o_corestone_db'); // Sesuaikan dengan nama database di hosting
+define('DB_USER', 'cpses_ulosrqmp5o'); // User database dari hosting
+define('DB_PASS', ''); // Isi dengan password database dari hosting Anda
 
 // Site Configuration
 define('SITE_NAME', 'Core Stone Indonesia');
-define('SITE_URL', 'http://localhost/corestone');
+define('SITE_URL', 'https://corestone.id'); // Ganti dengan domain Anda
 define('ADMIN_EMAIL', 'admin@corestone.id');
 define('WHATSAPP_NUMBER', '6281214932916');
 
